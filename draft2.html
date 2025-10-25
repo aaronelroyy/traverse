@@ -3,87 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interactive Trip Planner</title>
+  <title>Traverse – The Ultimate Vacay</title>
   <style>
-    * {
-      box-sizing: border-box;
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+    
+    body, html { 
       font-family: 'Poppins', sans-serif;
-    }
-
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      background-image: url('bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      width: 100%; 
+      height: 100%; 
       color: white;
+      overflow: hidden;
     }
 
-    .page {
+    .page {  
+      position: absolute; 
+      inset: 0; 
+      width: 100%; 
+      height: 100%; 
+      opacity: 0;
       display: none;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      transition: opacity 0.5s ease;
+      transition: opacity .5s ease; 
+    }
+    
+    .page.active { 
+      display: block; 
+      opacity: 1; 
     }
 
-    .page.active {
-      display: block;
-      opacity: 1;
-    }
-
-    /* ===== Entry Page ===== */
+    /* ===== Entry Page with Video ===== */
     .entry-page {
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
       position: relative;
+      overflow: hidden;
+    }
+
+    /* Video Background */
+    .entry-page video {
+      position: absolute;
+      top: 0; 
+      left: 0;
+      width: 100%; 
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      filter: brightness(0.75);
+    }
+
+    /* Overlay gradient for smooth blend */
+    .entry-page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.25), rgba(0,0,0,0.85));
+      z-index: 1;
     }
 
     .entry-overlay {
-      background: rgba(0, 0, 0, 0.55);
+      position: relative;
+      z-index: 2;
+      background: rgba(0,0,0,0.35);
       backdrop-filter: blur(5px);
-      padding: 2rem 3rem;
-      border-radius: 20px;
-      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+      padding: 3rem 4rem;
+      border-radius: 30px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .entry-overlay h1 {
-      margin-bottom: 1rem;
-      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
     .entry-overlay input {
-      padding: 0.8rem 1.2rem;
-      width: 250px;
-      border-radius: 30px;
+      padding: 1rem 1.5rem;
+      width: 320px;
+      border-radius: 40px;
       border: none;
       outline: none;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
       font-size: 1rem;
       text-align: center;
+      color: #222;
     }
 
     .entry-overlay button {
-      background: #00b894;
+      background: linear-gradient(135deg, #00cba9, #00b894);
       color: white;
-      padding: 0.8rem 1.5rem;
+      padding: 1rem 2rem;
       border: none;
-      border-radius: 30px;
+      border-radius: 40px;
       cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-      transition: background 0.3s;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all .3s ease;
     }
 
     .entry-overlay button:hover {
-      background: #019875;
+      background: linear-gradient(135deg, #00b894, #009f7b);
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0,255,200,0.3);
     }
 
     /* ===== Planner Page ===== */
@@ -96,111 +132,108 @@
 
     .back-button {
       position: absolute;
-      top: 1.5rem;
+      top: 1.5rem; 
       left: 1.5rem;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255,255,255,0.2);
       backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      border: 1.5px solid rgba(255,255,255,0.4);
       color: white;
       padding: 0.4rem 1rem;
       border-radius: 30px;
       cursor: pointer;
       font-weight: 500;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
       transition: all 0.3s;
       z-index: 100;
     }
-
-    .back-button:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transform: translateX(-3px);
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    
+    .back-button:hover { 
+      background: rgba(255,255,255,0.35); 
+      transform: translateX(-3px); 
     }
 
-    h2 {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1rem;
+    h2 { 
+      text-align: center; 
+      font-size: 2rem; 
+      margin-bottom: 1rem; 
     }
 
     .planner-container {
-      display: flex;
+      display: flex; 
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 2rem;
+      justify-content: center; 
+      gap: 2rem; 
       margin-top: 1.5rem;
     }
 
     .planner-section {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 1.5rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px; 
+      padding: 1.5rem; 
       width: 350px;
       backdrop-filter: blur(5px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
-    .planner-section h3 {
-      margin-top: 0;
-      text-align: center;
+    .planner-section h3 { 
+      margin-top: 0; 
+      text-align: center; 
     }
-
+    
     input, select {
-      width: 100%;
-      margin: 0.5rem 0;
+      width: 100%; 
+      margin: 0.5rem 0; 
       padding: 0.6rem;
-      border-radius: 8px;
-      border: none;
+      border-radius: 8px; 
+      border: none; 
       outline: none;
       font-size: 0.9rem;
     }
-
-    button {
-      background: #00b894;
-      color: white;
-      border: none;
+    
+    button { 
+      background: #00b894; 
+      color: white; 
+      border: none; 
       padding: 0.6rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s;
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      transition: background .3s; 
     }
-
-    button:hover { background: #019875; }
+    
+    button:hover { 
+      background: #019875; 
+    }
 
     .activity-card {
-      display: flex;
-      justify-content: space-between;
+      display: flex; 
+      justify-content: space-between; 
       align-items: center;
-      background: rgba(255, 255, 255, 0.15);
-      padding: 0.8rem;
-      margin-bottom: 0.6rem;
+      background: rgba(255,255,255,0.15);
+      padding: 0.8rem; 
+      margin-bottom: 0.6rem; 
       border-radius: 10px;
     }
-
-    .activity-info {
-      display: flex;
-      flex-direction: column;
+    
+    .activity-info { 
+      display: flex; 
+      flex-direction: column; 
     }
-
-    .activity-name {
-      font-weight: bold;
+    
+    .activity-name { 
+      font-weight: bold; 
     }
-
-    .activity-category {
-      font-size: 0.8rem;
-      opacity: 0.8;
+    
+    .activity-category { 
+      font-size: 0.8rem; 
+      opacity: 0.8; 
     }
-
-    .activity-actions button {
-      background: transparent;
-      color: #ff7675;
-      font-size: 1rem;
-      border: none;
-      cursor: pointer;
+    
+    .activity-actions button { 
+      background: transparent; 
+      color: #ff7675; 
+      font-size: 1rem; 
+      border: none; 
+      cursor: pointer; 
     }
 
     .empty-state {
@@ -208,28 +241,28 @@
       opacity: 0.7;
       margin-top: 1rem;
     }
-
+    
     .suggestion-item {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255,255,255,0.15);
       padding: 0.6rem;
       border-radius: 8px;
       margin: 0.3rem 0;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background .3s;
     }
-
+    
     .suggestion-item:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255,255,255,0.3);
     }
-
+    
     .summary {
       text-align: center;
       font-size: 1.1rem;
       margin-top: 1rem;
       line-height: 1.8rem;
     }
-
-    @media (max-width: 768px) {
+    
+    @media(max-width:768px) {
       .planner-container {
         flex-direction: column;
         align-items: center;
@@ -237,31 +270,28 @@
     }
   </style>
 </head>
+
 <body>
 
-  <!-- ===== Page 1: Destination Entry ===== -->
+  <!-- ===== Page 1 ===== -->
   <div class="page entry-page active" id="entryPage">
     <div class="entry-overlay">
-      <h1>🌍 Plan Your Next Adventure</h1>
+      <h1>🌍 Traverse – The Ultimate Vacay</h1>
       <input type="text" id="destinationInput" placeholder="Enter Destination (e.g., Paris)" />
       <br />
       <button onclick="startPlanning()">Start Planning</button>
     </div>
   </div>
 
-  <!-- ===== Page 2: Trip Planner ===== -->
+  <!-- ===== Page 2 ===== -->
   <div class="page planner-page" id="plannerPage">
-    <button class="back-button" onclick="goBack()">← Back to Home</button>
+    <button class="back-button" onclick="goBack()">← Back</button>
     <h2 id="destinationTitle">Your Trip Plan</h2>
-
     <div class="planner-container">
-      <!-- Suggestions Section -->
       <div class="planner-section">
         <h3>Suggested Activities</h3>
         <div id="suggestions"></div>
       </div>
-
-      <!-- Add Activity Section -->
       <div class="planner-section">
         <h3>Add Activity</h3>
         <input type="text" id="activityName" placeholder="Activity Name" />
@@ -275,25 +305,19 @@
         <input type="number" id="activityCost" placeholder="Estimated Cost ($)" />
         <button onclick="addActivity()">+ Add Activity</button>
       </div>
-
-      <!-- Activities List -->
       <div class="planner-section">
         <h3>Itinerary</h3>
         <div id="activitiesList"></div>
       </div>
-
-      <!-- Summary -->
       <div class="planner-section">
         <h3>Summary</h3>
-        <div>
-          <label>Number of Travelers:</label>
-          <input type="number" id="travelerCount" min="1" value="2" onchange="updateCostSummary()" />
-        </div>
+        <label>Travelers:</label>
+        <input type="number" id="travelerCount" min="1" value="2" onchange="updateCostSummary()" />
         <div class="summary">
-          <p>Total Cost: <span id="totalCost">$0.00</span></p>
-          <p>Cost per Person: <span id="perPersonCost">$0.00</span></p>
+          <p>Total: <span id="totalCost">$0.00</span></p>
+          <p>Per Person: <span id="perPersonCost">$0.00</span></p>
         </div>
-        <div style="text-align:center; margin-top:1rem;">
+        <div style="text-align:center;margin-top:1rem;">
           <button onclick="savePlan()">💾 Save</button>
           <button onclick="loadPlan()">📂 Load</button>
           <button onclick="printItinerary()">🖨️ Print</button>
@@ -302,146 +326,96 @@
     </div>
   </div>
 
-  <!-- ===== JavaScript ===== -->
   <script>
-    const famousPlaces = [
-      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", // Paris
-      "https://images.unsplash.com/photo-1499856871958-5b9627545d1a", // Venice
-      "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad", // Santorini
-      "https://images.unsplash.com/photo-1543731068-5e7d0ac08f00",     // New York
-      "https://images.unsplash.com/photo-1485738422979-f5c462d49f74", // Dubai
-      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c", // Kyoto
-      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200", // Rome
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5",     // London
-      "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd", // Singapore
-      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1", // Thailand
-      "https://images.unsplash.com/photo-1539037116277-4db20889f2d4", // Sydney
-      "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee"  // San Francisco
-    ];
-
-    function generateDynamicBackground() {
-      const selectedImages = famousPlaces.sort(() => 0.5 - Math.random()).slice(0, 12);
-      const backgroundImages = selectedImages
-        .map((url, i) => {
-          const x = (i % 4) * 25;
-          const y = Math.floor(i / 4) * 33;
-          return `url('${url}?w=400&h=300&fit=crop') ${x}% ${y}% / 25% 33% no-repeat`;
-        })
-        .join(", ");
-      document.querySelector(".entry-page").style.background = 
-        `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), ${backgroundImages}`;
-    }
-
     const destinationData = {
-      "Paris": { activities: ["Eiffel Tower Tour", "Louvre Museum Visit", "Seine River Cruise", "Montmartre Exploration"] },
-      "Tokyo": { activities: ["Senso-ji Temple", "Tokyo Tower", "Shibuya Crossing", "Tsukiji Fish Market"] },
-      "New York": { activities: ["Statue of Liberty", "Central Park Walk", "Times Square", "Brooklyn Bridge"] },
-      "London": { activities: ["Big Ben & Parliament", "British Museum", "Tower Bridge", "Buckingham Palace"] },
-      "Dubai": { activities: ["Burj Khalifa", "Dubai Mall", "Desert Safari", "Gold Souk Shopping"] }
+      "Paris": { activities: ["Eiffel Tower Tour","Louvre Museum","Seine River Cruise","Montmartre Walk"] },
+      "Tokyo": { activities: ["Senso-ji Temple","Tokyo Tower","Shibuya Crossing","Tsukiji Market"] },
+      "New York": { activities: ["Statue of Liberty","Central Park","Times Square","Brooklyn Bridge"] },
+      "London": { activities: ["Big Ben","British Museum","Tower Bridge","Buckingham Palace"] },
+      "Dubai": { activities: ["Burj Khalifa","Desert Safari","Dubai Mall","Gold Souk"] }
     };
-
-    let tripPlan = { destination: "", travelers: 2, activities: [], totalCost: 0 };
-
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
+    let tripPlan={destination:"",travelers:2,activities:[],totalCost:0};
+    function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");}
+    function startPlanning(){
+      const dest=document.getElementById("destinationInput").value.trim();
+      if(!dest)return alert("Please enter a destination!");
+      tripPlan.destination=dest;
+      loadDestinationData(dest);
+      showPage("plannerPage");
     }
-
-    function startPlanning() {
-      const destination = document.getElementById('destinationInput').value.trim();
-      if (!destination) return alert('Please enter a destination!');
-      tripPlan.destination = destination;
-      loadDestinationData(destination);
-      showPage('plannerPage');
+    function goBack(){showPage("entryPage");}
+    function loadDestinationData(dest){
+      document.getElementById("destinationTitle").textContent=`Trip to ${dest}`;
+      const data=destinationData[dest];
+      displaySuggestions(data?.activities||["Explore Local Attractions","Try Local Cuisine","Visit Museums","City Walking Tour"]);
     }
-
-    function goBack() { showPage('entryPage'); }
-
-    function loadDestinationData(destination) {
-      document.getElementById('destinationTitle').textContent = `Trip to ${destination}`;
-      const data = destinationData[destination];
-      displaySuggestions(data?.activities || ["Explore Local Attractions", "Try Local Cuisine", "Visit Museums", "City Walking Tour"]);
+    function displaySuggestions(arr){
+      document.getElementById("suggestions").innerHTML=arr.map(a=>`<div class="suggestion-item" onclick="addSuggestedActivity('${a}')">+ ${a}</div>`).join('');
     }
-
-    function displaySuggestions(activities) {
-      document.getElementById('suggestions').innerHTML = activities
-        .map(a => `<div class="suggestion-item" onclick="addSuggestedActivity('${a}')">+ ${a}</div>`)
-        .join('');
+    function addActivity(){
+      const name=document.getElementById("activityName").value.trim(),
+            category=document.getElementById("activityCategory").value,
+            cost=parseFloat(document.getElementById("activityCost").value)||0;
+      if(!name)return alert("Please enter an activity name!");
+      tripPlan.activities.push({id:Date.now(),name,category,cost});
+      document.getElementById("activityName").value='';document.getElementById("activityCost").value='';
+      renderActivities();updateCostSummary();
     }
-
-    function addActivity() {
-      const name = document.getElementById('activityName').value.trim();
-      const category = document.getElementById('activityCategory').value;
-      const cost = parseFloat(document.getElementById('activityCost').value) || 0;
-      if (!name) return alert('Please enter an activity name!');
-      tripPlan.activities.push({ id: Date.now(), name, category, cost });
-      document.getElementById('activityName').value = '';
-      document.getElementById('activityCost').value = '';
-      renderActivities();
-      updateCostSummary();
+    function addSuggestedActivity(name){document.getElementById("activityName").value=name;}
+    function renderActivities(){
+      const c=document.getElementById("activitiesList");
+      if(!tripPlan.activities.length){c.innerHTML=`<div class="empty-state"><p>No activities yet. Start planning!</p></div>`;return;}
+      c.innerHTML=tripPlan.activities.map(a=>`
+      <div class="activity-card">
+        <div class="activity-info">
+          <div class="activity-name">${a.name}</div>
+          <span class="activity-category">${a.category}</span>
+        </div>
+        <div>$${a.cost.toFixed(2)}</div>
+        <div class="activity-actions"><button onclick="deleteActivity(${a.id})">🗑️</button></div>
+      </div>`).join('');
     }
-
-    function addSuggestedActivity(name) {
-      document.getElementById('activityName').value = name;
-      document.getElementById('activityName').focus();
+    function deleteActivity(id){tripPlan.activities=tripPlan.activities.filter(a=>a.id!==id);renderActivities();updateCostSummary();}
+    function updateCostSummary(){
+      const total=tripPlan.activities.reduce((s,a)=>s+a.cost,0);
+      tripPlan.totalCost=total;
+      tripPlan.travelers=parseInt(document.getElementById("travelerCount").value)||1;
+      document.getElementById("totalCost").textContent=`$${total.toFixed(2)}`;
+      document.getElementById("perPersonCost").textContent=`$${(total/tripPlan.travelers).toFixed(2)}`;
     }
-
-    function renderActivities() {
-      const container = document.getElementById('activitiesList');
-      if (!tripPlan.activities.length) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>No activities added yet. Start planning your trip!</p>
-          </div>`;
-        return;
-      }
-      container.innerHTML = tripPlan.activities.map(a => `
-        <div class="activity-card">
-          <div class="activity-info">
-            <div class="activity-name">${a.name}</div>
-            <span class="activity-category">${a.category}</span>
-          </div>
-          <div class="activity-cost">$${a.cost.toFixed(2)}</div>
-          <div class="activity-actions"><button onclick="deleteActivity(${a.id})">🗑️</button></div>
-        </div>`).join('');
+    function savePlan(){
+      const planData = JSON.stringify(tripPlan);
+      const blob = new Blob([planData], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'trip-plan.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("✅ Plan saved!");
     }
-
-    function deleteActivity(id) {
-      tripPlan.activities = tripPlan.activities.filter(a => a.id !== id);
-      renderActivities();
-      updateCostSummary();
+    function loadPlan(){
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = event => {
+          tripPlan = JSON.parse(event.target.result);
+          document.getElementById("destinationInput").value = tripPlan.destination;
+          document.getElementById("travelerCount").value = tripPlan.travelers;
+          renderActivities();
+          updateCostSummary();
+          showPage("plannerPage");
+          loadDestinationData(tripPlan.destination);
+          alert("✅ Plan loaded!");
+        };
+        reader.readAsText(file);
+      };
+      input.click();
     }
-
-    function updateCostSummary() {
-      const total = tripPlan.activities.reduce((sum, a) => sum + a.cost, 0);
-      tripPlan.totalCost = total;
-      tripPlan.travelers = parseInt(document.getElementById('travelerCount').value) || 1;
-      const perPerson = total / tripPlan.travelers;
-      document.getElementById('totalCost').textContent = `$${total.toFixed(2)}`;
-      document.getElementById('perPersonCost').textContent = `$${perPerson.toFixed(2)}`;
-    }
-
-    function savePlan() {
-      window.savedTripPlan = JSON.stringify(tripPlan);
-      alert('✅ Plan saved successfully!');
-    }
-
-    function loadPlan() {
-      if (!window.savedTripPlan) return alert('ℹ️ No saved plan found');
-      tripPlan = JSON.parse(window.savedTripPlan);
-      document.getElementById('destinationInput').value = tripPlan.destination;
-      document.getElementById('destinationTitle').textContent = `Trip to ${tripPlan.destination}`;
-      document.getElementById('travelerCount').value = tripPlan.travelers;
-      renderActivities();
-      updateCostSummary();
-      showPage('plannerPage');
-      loadDestinationData(tripPlan.destination);
-      alert('✅ Plan loaded successfully!');
-    }
-
-    function printItinerary() { window.print(); }
-
-    document.addEventListener('DOMContentLoaded', generateDynamicBackground);
+    function printItinerary(){window.print();}
   </script>
 </body>
 </html>
