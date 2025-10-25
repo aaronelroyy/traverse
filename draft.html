@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Planner - Ideathon Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: none;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* PAGE 1: ENTRY SCREEN */
+    .entry-page {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .entry-page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(240, 147, 251, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+      animation: bgPulse 15s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .floating-icons {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .float-icon {
+      position: absolute;
+      font-size: 3rem;
+      opacity: 0.1;
+      animation: float 20s infinite;
+    }
+
+    .float-icon:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+    .float-icon:nth-child(2) { left: 80%; top: 30%; animation-delay: 3s; }
+    .float-icon:nth-child(3) { left: 15%; top: 70%; animation-delay: 6s; }
+    .float-icon:nth-child(4) { left: 70%; top: 80%; animation-delay: 9s; }
+    .float-icon:nth-child(5) { left: 50%; top: 10%; animation-delay: 12s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-30px) rotate(5deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(30px) rotate(-5deg); }
+    }
+
+    .entry-card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .entry-card h1 {
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .entry-card p {
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      animation: slideDown 0.8s ease-out;
+    }
+
+    .decorative-line {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, white, transparent);
+      margin: 1rem auto;
+      border-radius: 2px;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .input-group input:focus {
+      border-color: #667eea;
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 1rem 3rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    /* PAGE 2: PLANNER */
+    .planner-page {
+      background: #f5f7fa;
+      position: relative;
+    }
+
+    .planner-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 400px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+      z-index: 0;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+      z-index: 100;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateX(-5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-section {
+      background: transparent;
+      padding: 3rem 2rem;
+      color: white;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-section::before {
+      content: '✈️';
+      position: absolute;
+      font-size: 8rem;
+      opacity: 0.05;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .hero-section h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 2;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    .hero-section p {
+      font-size: 1.2rem;
+      opacity: 0.95;
+      position: relative;
+      z-index: 2;
+      animation: slideDown 0.8s ease-out;
+    }
+
+    .hero-decoration {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 1.5rem;
+      animation: slideDown 1s ease-out;
+    }
+
+    .hero-decoration span {
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .hero-decoration span:nth-child(2) { animation-delay: 0.2s; }
+    .hero-decoration span:nth-child(3) { animation-delay: 0.4s; }
+    .hero-decoration span:nth-child(4) { animation-delay: 0.6s; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .planner-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 968px) {
+      .planner-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sidebar {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      height: fit-content;
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(135deg, #667eea, #764ba2) border-box;
+    }
+
+    .sidebar h3 {
+      color: #667eea;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar h3::before {
+      content: '✨';
+      animation: sparkle 2s ease-in-out infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .suggestion-item {
+      padding: 0.75rem;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .suggestion-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      transition: left 0.5s;
+    }
+
+    .suggestion-item:hover::before {
+      left: 100%;
+    }
+
+    .suggestion-item:hover {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      transform: translateX(8px);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .main-content {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-content::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 0%, transparent 70%);
+      animation: bgRotate 30s linear infinite;
+    }
+
+    @keyframes bgRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .main-content > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .add-activity-form {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #495057;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-add {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-add:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    .activities-list {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .activity-card {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .activity-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+
+    .activity-info {
+      flex: 1;
+    }
+
+    .activity-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-category {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .category-sightseeing { background: #e7f5ff; color: #1971c2; }
+    .category-food { background: #fff3bf; color: #f76707; }
+    .category-shopping { background: #d3f9d8; color: #2f9e44; }
+    .category-transport { background: #ffe3e3; color: #c92a2a; }
+    .category-accommodation { background: #e5dbff; color: #6741d9; }
+
+    .activity-cost {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #667eea;
+      margin: 0 2rem;
+    }
+
+    .activity-actions button {
+      background: transparent;
+      border: none;
+      color: #868e96;
+      cursor: pointer;
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      transition: color 0.2s;
+    }
+
+    .activity-actions button:hover {
+      color: #c92a2a;
+    }
+
+    .cost-summary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .cost-item {
+      text-align: center;
+    }
+
+    .cost-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-bottom: 0.5rem;
+    }
+
+    .cost-value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .traveler-input {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .traveler-input input {
+      width: 60px;
+      padding: 0.5rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #868e96;
+    }
+
+    .empty-state svg {
+      width: 100px;
+      height: 100px;
+      opacity: 0.3;
+      margin-bottom: 1rem;
+    }
+
+    @media print {
+      .sidebar,
+      .add-activity-form,
+      .action-buttons {
+        display: none;
+      }
+      
+      .planner-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1: DESTINATION ENTRY -->
+  <div id="entryPage" class="page active">
+    <div class="entry-page">
+      <div class="floating-icons">
+        <div class="float-icon">✈️</div>
+        <div class="float-icon">🏖️</div>
+        <div class="float-icon">🗺️</div>
+        <div class="float-icon">🎒</div>
+        <div class="float-icon">🌍</div>
+      </div>
+      <div class="entry-card">
+        <h1>✈️ Traverse</h1>
+        <div class="decorative-line"></div>
+        <p>Plan your perfect journey with cost tracking</p>
+        <div class="input-group">
+          <input type="text" id="destinationInput" placeholder="Where do you want to go?" 
+                 onkeypress="if(event.key==='Enter') startPlanning()">
+        </div>
+        <button class="btn-primary" onclick="startPlanning()">Start Planning →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: ITINERARY PLANNER -->
+  <div id="plannerPage" class="page">
+    <div class="planner-page">
+      <button class="back-button" onclick="goBack()">
+        ← Back to Home
+      </button>
+      
+      <div class="hero-section" id="heroSection">
+        <h1 id="destinationTitle">Your Trip</h1>
+        <p>Plan your activities and track your budget</p>
+        <div class="hero-decoration">
+          <span>🏨</span>
+          <span>🍽️</span>
+          <span>🎭</span>
+          <span>🛍️</span>
+        </div>
+      </div>
+
+      <div class="planner-container">
+        <!-- SIDEBAR: SUGGESTIONS -->
+        <aside class="sidebar">
+          <h3>Suggested Activities</h3>
+          <div id="suggestions">
+            <div class="suggestion-item" onclick="addSuggestedActivity('Explore Local Markets')">+ Explore Local Markets</div>
+            <div class="suggestion-item" onclick="addSuggestedActivity('City Walking Tour')">+ City Walking Tour</div>
+            <div class="suggestion-item" onclick="addSuggestedActivity('Try Local Cuisine')">+ Try Local Cuisine</div>
+          </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+          <!-- ADD ACTIVITY FORM -->
+          <div class="add-activity-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Activity Name</label>
+                <input type="text" id="activityName" placeholder="e.g., Eiffel Tower Visit">
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="activityCategory">
+                  <option value="sightseeing">Sightseeing</option>
+                  <option value="food">Food</option>
+                  <option value="shopping">Shopping</option>
+                  <option value="transport">Transport</option>
+                  <option value="accommodation">Accommodation</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Cost ($)</label>
+                <input type="number" id="activityCost" placeholder="0" min="0" step="0.01">
+              </div>
+              <button class="btn-add" onclick="addActivity()">+ Add</button>
+            </div>
+          </div>
+
+          <!-- COST SUMMARY -->
+          <div class="cost-summary">
+            <div class="cost-item">
+              <div class="cost-label">Total Cost</div>
+              <div class="cost-value" id="totalCost">$0.00</div>
+            </div>
+            <div class="cost-item">
+              <div class="cost-label">Number of Travelers</div>
+              <div class="traveler-input">
+                <input type="number" id="travelerCount" value="2" min="1" onchange="updateCostSummary()">
+              </div>
+            </div>
+            <div class="cost-item">
+              <div class="cost-label">Cost Per Person</div>
+              <div class="cost-value" id="perPersonCost">$0.00</div>
+            </div>
+          </div>
+
+          <!-- ACTIVITIES LIST -->
+          <div id="activitiesList" class="activities-list">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <p>No activities added yet. Start planning your trip!</p>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="action-buttons">
+            <button class="btn-secondary" onclick="savePlan()">💾 Save Plan</button>
+            <button class="btn-secondary" onclick="loadPlan()">📂 Load Plan</button>
+            <button class="btn-secondary" onclick="printItinerary()">🖨️ Print</button>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DESTINATION DATABASE
+    const destinationData = {
+      "Paris": {
+        activities: ["Eiffel Tower Tour", "Louvre Museum Visit", "Seine River Cruise", "Montmartre Exploration"]
+      },
+      "Tokyo": {
+        activities: ["Senso-ji Temple", "Tokyo Tower", "Shibuya Crossing", "Tsukiji Fish Market"]
+      },
+      "New York": {
+        activities: ["Statue of Liberty", "Central Park Walk", "Times Square", "Brooklyn Bridge"]
+      },
+      "London": {
+        activities: ["Big Ben & Parliament", "British Museum", "Tower Bridge", "Buckingham Palace"]
+      },
+      "Dubai": {
+        activities: ["Burj Khalifa", "Dubai Mall", "Desert Safari", "Gold Souk Shopping"]
+      }
+    };
+
+    // TRIP DATA MODEL
+    let tripPlan = {
+      destination: "",
+      travelers: 2,
+      activities: [],
+      totalCost: 0
+    };
+
+    // PAGE NAVIGATION
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    function startPlanning() {
+      const destination = document.getElementById('destinationInput').value.trim();
+      if (!destination) {
+        alert('Please enter a destination!');
+        return;
+      }
+      tripPlan.destination = destination;
+      loadDestinationData(destination);
+      showPage('plannerPage');
+    }
+
+    function goBack() {
+      showPage('entryPage');
+    }
+
+    // LOAD DESTINATION DATA
+    function loadDestinationData(destination) {
+      document.getElementById('destinationTitle').textContent = `Trip to ${destination}`;
+      
+      const data = destinationData[destination];
+      if (data && data.activities) {
+        displaySuggestions(data.activities);
+      } else {
+        displaySuggestions([
+          "Explore Local Attractions",
+          "Try Local Cuisine",
+          "Visit Museums",
+          "City Walking Tour"
+        ]);
+      }
+    }
+
+    function displaySuggestions(activities) {
+      const container = document.getElementById('suggestions');
+      container.innerHTML = activities.map(activity => 
+        `<div class="suggestion-item" onclick="addSuggestedActivity('${activity}')">+ ${activity}</div>`
+      ).join('');
+    }
+
+    // ADD ACTIVITY
+    function addActivity() {
+      const name = document.getElementById('activityName').value.trim();
+      const category = document.getElementById('activityCategory').value;
+      const cost = parseFloat(document.getElementById('activityCost').value) || 0;
+
+      if (!name) {
+        alert('Please enter an activity name!');
+        return;
+      }
+
+      const activity = {
+        id: Date.now(),
+        name,
+        category,
+        cost
+      };
+
+      tripPlan.activities.push(activity);
+      
+      // Clear form
+      document.getElementById('activityName').value = '';
+      document.getElementById('activityCost').value = '';
+      
+      renderActivities();
+      updateCostSummary();
+    }
+
+    function addSuggestedActivity(name) {
+      document.getElementById('activityName').value = name;
+      document.getElementById('activityName').focus();
+    }
+
+    // RENDER ACTIVITIES
+    function renderActivities() {
+      const container = document.getElementById('activitiesList');
+      
+      if (tripPlan.activities.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <p>No activities added yet. Start planning your trip!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tripPlan.activities.map(activity => `
+        <div class="activity-card">
+          <div class="activity-info">
+            <div class="activity-name">${activity.name}</div>
+            <span class="activity-category category-${activity.category}">${activity.category}</span>
+          </div>
+          <div class="activity-cost">${activity.cost.toFixed(2)}</div>
+          <div class="activity-actions">
+            <button onclick="deleteActivity(${activity.id})" title="Delete">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // DELETE ACTIVITY
+    function deleteActivity(id) {
+      tripPlan.activities = tripPlan.activities.filter(a => a.id !== id);
+      renderActivities();
+      updateCostSummary();
+    }
+
+    // UPDATE COST SUMMARY
+    function updateCostSummary() {
+      const total = tripPlan.activities.reduce((sum, a) => sum + a.cost, 0);
+      tripPlan.totalCost = total;
+      tripPlan.travelers = parseInt(document.getElementById('travelerCount').value) || 1;
+      const perPerson = total / tripPlan.travelers;
+      
+      document.getElementById('totalCost').textContent = `${total.toFixed(2)}`;
+      document.getElementById('perPersonCost').textContent = `${perPerson.toFixed(2)}`;
+    }
+
+    // SAVE PLAN (using in-memory storage for demo)
+    function savePlan() {
+      try {
+        window.savedTripPlan = JSON.stringify(tripPlan);
+        alert('✅ Plan saved successfully!');
+      } catch (error) {
+        alert('❌ Error saving plan');
+      }
+    }
+
+    // LOAD PLAN
+    function loadPlan() {
+      try {
+        if (window.savedTripPlan) {
+          const loaded = JSON.parse(window.savedTripPlan);
+          tripPlan = loaded;
+          
+          // Update UI
+          document.getElementById('destinationInput').value = tripPlan.destination;
+          document.getElementById('destinationTitle').textContent = `Trip to ${tripPlan.destination}`;
+          document.getElementById('travelerCount').value = tripPlan.travelers;
+          
+          renderActivities();
+          updateCostSummary();
+          
+          // Switch to planner page if on entry page
+          if (document.getElementById('entryPage').classList.contains('active')) {
+            showPage('plannerPage');
+            loadDestinationData(tripPlan.destination);
+          }
+          
+          alert('✅ Plan loaded successfully!');
+        } else {
+          alert('ℹ️ No saved plan found');
+        }
+      } catch (error) {
+        alert('❌ Error loading plan');
+      }
+    }
+
+    // PRINT ITINERARY
+    function printItinerary() {
+      window.print();
+    }
+
+    // INITIALIZE
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if there's a saved plan on load
+      if (window.savedTripPlan) {
+        const shouldLoad = confirm('Found a saved trip plan. Would you like to load it?');
+        if (shouldLoad) {
+          loadPlan();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
